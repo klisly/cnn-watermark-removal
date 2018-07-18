@@ -1,4 +1,5 @@
-from dataset import batch_masks, unstandardize, dataset_paths, dataset_voc2012, dataset_split, dataset_voc2012_rec  # noqa
+from dataset import batch_masks, unstandardize, dataset_paths, dataset_voc2012, dataset_split, \
+    dataset_voc2012_rec  # noqa
 from io import BytesIO
 from time import time
 import IPython.display
@@ -21,6 +22,7 @@ dataset.FLAGS = FLAGS
 DEBUG = False
 dataset.DEBUG = DEBUG
 
+
 #########
 # Model #
 #########
@@ -42,7 +44,7 @@ def dense_block(net, growth_rate, channels_init, layers, training):
                 net,
                 4 * growth_rate, 1,
                 padding='same',
-                activation=None,)
+                activation=None, )
             net = tf.layers.batch_normalization(net, training=training)
             net = tf.nn.relu(net)
 
@@ -50,7 +52,7 @@ def dense_block(net, growth_rate, channels_init, layers, training):
             net,
             growth_rate, 3,
             padding='same',
-            activation=None,)
+            activation=None, )
         net = tf.concat([previous_input, net], axis=3)
     return net
 
@@ -76,7 +78,7 @@ def model(images, training):
     bottleneck_channels = 32
 
     net = tf.layers.conv2d(images, channels_init, 3,
-                           padding='same', activation=None,)
+                           padding='same', activation=None, )
 
     net = dense_block(net, growth_rate, channels_init, 4, training)
     net = tf.layers.batch_normalization(net, training=training)
@@ -84,7 +86,7 @@ def model(images, training):
 
     # Bottleneck
     net = tf.layers.conv2d(
-        net, bottleneck_channels, 1, padding='same', activation=None,)
+        net, bottleneck_channels, 1, padding='same', activation=None, )
     net = tf.layers.batch_normalization(net, training=training)
     net = tf.nn.relu(net)
 
@@ -104,6 +106,7 @@ def model(images, training):
 
     net = tf.layers.conv2d(net, 3, 3, padding='same', activation=None)
     return net
+
 
 #############
 # Inference #
@@ -172,6 +175,7 @@ def inference(sess, dataset, passes=1,
     images = [unstandardize(x) for x in results]
     return images
 
+
 ############
 # Training #
 ############
@@ -193,7 +197,7 @@ def train(sess, dataset, min_opacity=.15, max_opacity=.4):
     # Define loss
     image_mask = -(image_w - next_image)  # Mask after application on the image
     abs_loss = tf.losses.absolute_difference(
-        predictions, image_mask, loss_collection=None)**.5
+        predictions, image_mask, loss_collection=None) ** .5
     tf.losses.add_loss(abs_loss)
     loss = tf.losses.get_total_loss(True)
     tf.summary.scalar('loss', loss)
@@ -214,6 +218,8 @@ def train(sess, dataset, min_opacity=.15, max_opacity=.4):
 
     saver = tf.train.Saver()
     summaries = tf.summary.merge_all()
+    print("FLAGS:", FLAGS)
+    print("os.path.join(FLAGS.logdir, 'train'):" + os.path.join(FLAGS.logdir, 'train'))
     train_writer = tf.summary.FileWriter(os.path.join(FLAGS.logdir, 'train'), sess.graph)
     val_writer = tf.summary.FileWriter(os.path.join(FLAGS.logdir, 'val'), sess.graph)
 
@@ -269,6 +275,7 @@ def show_images(images):
             plt.imshow(images[i], interpolation='nearest')
         else:
             show_array(images[i])
+
 
 #######
 # Run #
